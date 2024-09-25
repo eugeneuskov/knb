@@ -3,3 +3,6 @@
 hooks/*
 
 /docs/
+/.env
+/.env.test
+/docker-compose.yml
