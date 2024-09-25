@@ -29,6 +29,10 @@ func (app *Application) Run() {
 		log.Fatal(err.Error())
 	}
 
+	if err := app.runHttpServer(); err != nil {
+		log.Fatalf("Error occured while running HTTP server: %s\n", err.Error())
+	}
+
 	println("App started")
 }
 
@@ -39,10 +43,6 @@ func (app *Application) connectDB() error {
 
 	if err := app.db.Migrate(); err != nil {
 		return fmt.Errorf("DB Migrate is failed: %s\n", err.Error())
-	}
-
-	if err := app.runHttpServer(); err != nil {
-		return fmt.Errorf("Error occured while running HTTP server: %s\n", err.Error())
 	}
 
 	return nil
