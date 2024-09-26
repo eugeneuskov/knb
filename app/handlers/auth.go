@@ -46,10 +46,15 @@ func (h *Handler) authLogin(c *gin.Context) {
 		return
 	}
 
-	response, err := h.service.Auth.Login(
+	player, err := h.service.Auth.Login(
 		request.Login,
 		h.service.Security.GeneratePasswordHash(request.Password),
 	)
+	if err != nil {
+		h.response.ParseError(c, err)
+		return
+	}
+	token, err := h.service.Security.GenerateAuthToken(player.ID)
 	if err != nil {
 		h.response.ParseError(c, err)
 		return
@@ -58,7 +63,7 @@ func (h *Handler) authLogin(c *gin.Context) {
 	h.response.NewOkResponse(
 		c, http.StatusOK,
 		responses.AuthLoginResponse{
-			Token: response,
+			Token: token,
 		},
 	)
 }

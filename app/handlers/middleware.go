@@ -15,7 +15,7 @@ func (h *Handler) userAccessIdentity(c *gin.Context) {
 		return
 	}
 
-	playerId, err := h.service.Auth.ParseToken(headerToken)
+	playerId, err := h.service.Security.ParseAuthToken(headerToken)
 	if err != nil {
 		h.response.NewErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
 		return

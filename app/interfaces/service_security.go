@@ -1,7 +1,9 @@
 package interfaces
 
+import "github.com/google/uuid"
+
 type ServiceSecurity interface {
 	GeneratePasswordHash(password string) string
-	GenerateAuthToken(login, password string) (string, error)
-	ParseAuthToken(token string) (string, error)
+	GenerateAuthToken(playerId uuid.UUID) (string, error)
+	ParseAuthToken(accessToken string) (string, error)
 }

@@ -286,7 +286,7 @@ func TestAuthLogin(t *testing.T) {
 			}
 			assert.Equal(tt, http.StatusOK, resCode)
 
-			playerId, err := serviceMap.Auth.ParseToken(response.Token)
+			playerId, err := serviceMap.Security.ParseAuthToken(response.Token)
 			if err != nil {
 				t.Errorf("Failed to get created player, %s", err)
 			}
