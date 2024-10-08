@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"strings"
 )
@@ -48,20 +49,21 @@ func (h *Handler) checkHeader(c *gin.Context, headerName string) (string, error)
 	return headerValue, nil
 }
 
-func (h *Handler) getAccessContext(c *gin.Context) (string, error) {
+func (h *Handler) getAccessContext(c *gin.Context) (uuid.UUID, error) {
 	id, ok := c.Get(authorizationContext)
 	if !ok {
-		return "", errors.New("request is invalid")
+		return uuid.Nil, errors.New("request is invalid")
 	}
 
-	userId, ok := id.(string)
+	playerIdValue, ok := id.(string)
 	if !ok {
-		return "", errors.New("user is invalid")
+		return uuid.Nil, errors.New("player is invalid")
 	}
 
-	if userId == "" {
-		return "", errors.New("empty user ID")
+	playerId, err := uuid.Parse(playerIdValue)
+	if err != nil {
+		return uuid.Nil, errors.New("player is invalid")
 	}
 
-	return userId, nil
+	return playerId, nil
 }

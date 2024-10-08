@@ -15,10 +15,12 @@ const (
 
 type Repository struct {
 	Player interfaces.RepositoryPlayer
+	Game   interfaces.GameRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		Player: newPlayerRepository(db),
+		Game:   newGameRepository(db),
 	}
 }

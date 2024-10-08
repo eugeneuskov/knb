@@ -1,38 +1,20 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"knb/app/handlers/requests"
 	"knb/app/handlers/responses"
-	"knb/app/repositories"
-	"knb/app/services"
-	"knb/tests"
 	"knb/tests/fixtures"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 const (
-	authTestEnvFilePath = "../../.env.test"
-
-	routesMode      = "debug"
-	registrationUrl = "/auth/registration"
-	loginUrl        = "/auth/login"
+	authRegistrationUrl = "/auth/registration"
+	authLoginUrl        = "/auth/login"
 )
-
-type responseError struct {
-	Message string `json:"message"`
-}
-
-type expectedError struct {
-	code    int
-	message string
-}
 
 type registrationTestCase struct {
 	requestBody *requests.AuthRegistrationRequest
@@ -47,20 +29,11 @@ type loginTestCase struct {
 }
 
 func TestAuthRegistration(t *testing.T) {
-	bootstrapTest := tests.NewBootstrapTest(authTestEnvFilePath)
-	if err := bootstrapTest.SetupTestDB(); err != nil {
-		t.Errorf("Failed to setup test DB, %s", err)
-	}
+	layers := preparationForTest(t)
 
-	testDb := bootstrapTest.DB()
-	repositoryMap := repositories.NewRepository(testDb)
-	serviceMap := services.NewService(repositoryMap, bootstrapTest.Config())
-
-	if err := fixtures.NewFixtures(testDb, serviceMap).LoadPlayersFixture(); err != nil {
+	if err := fixtures.NewFixtures(layers.db, layers.service).LoadPlayersFixture(); err != nil {
 		t.Errorf("Failed to load fixtures, %s", err)
 	}
-
-	router := NewHandler(serviceMap).InitRoutes(routesMode)
 
 	registrationFailedTestCases := []registrationTestCase{
 		{
@@ -105,11 +78,13 @@ func TestAuthRegistration(t *testing.T) {
 
 	for _, tCase := range registrationFailedTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			resBody, resCode := sendRequestAndGetResponse(
-				router,
-				tCase.requestBody,
-				registrationUrl,
-			)
+			body, _ := json.Marshal(tCase.requestBody)
+			resBody, resCode := sendRequestAndGetResponse(requestData{
+				router:      layers.router,
+				requestBody: body,
+				method:      http.MethodPost,
+				url:         authRegistrationUrl,
+			})
 
 			if tCase.expectedError != nil {
 				if isNotError := assert.NotNil(tt, resBody); !isNotError {
@@ -141,11 +116,13 @@ func TestAuthRegistration(t *testing.T) {
 
 	for _, tCase := range registrationSuccessTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			resBody, resCode := sendRequestAndGetResponse(
-				router,
-				tCase.requestBody,
-				registrationUrl,
-			)
+			body, _ := json.Marshal(tCase.requestBody)
+			resBody, resCode := sendRequestAndGetResponse(requestData{
+				router:      layers.router,
+				requestBody: body,
+				method:      http.MethodPost,
+				url:         authRegistrationUrl,
+			})
 
 			var response responses.AuthRegistrationResponse
 			err := json.Unmarshal(resBody, &response)
@@ -154,7 +131,7 @@ func TestAuthRegistration(t *testing.T) {
 			}
 			assert.Equal(tt, http.StatusCreated, resCode)
 
-			result, err := repositoryMap.Player.FindById(response.ID)
+			result, err := layers.repository.Player.FindById(response.ID)
 			if err != nil {
 				t.Errorf("Failed to get created player, %s", err)
 			}
@@ -162,26 +139,17 @@ func TestAuthRegistration(t *testing.T) {
 		})
 	}
 
-	if err := bootstrapTest.TeardownTestDB(); err != nil {
+	if err := layers.bootstrap.TeardownTestDB(); err != nil {
 		t.Errorf("Failed to teardown test DB, %s", err)
 	}
 }
 
 func TestAuthLogin(t *testing.T) {
-	bootstrapTest := tests.NewBootstrapTest(authTestEnvFilePath)
-	if err := bootstrapTest.SetupTestDB(); err != nil {
-		t.Errorf("Failed to setup test DB, %s", err)
-	}
+	layers := preparationForTest(t)
 
-	testDB := bootstrapTest.DB()
-	repositoryMap := repositories.NewRepository(testDB)
-	serviceMap := services.NewService(repositoryMap, bootstrapTest.Config())
-
-	if err := fixtures.NewFixtures(testDB, serviceMap).LoadPlayersFixture(); err != nil {
+	if err := fixtures.NewFixtures(layers.db, layers.service).LoadPlayersFixture(); err != nil {
 		t.Errorf("Failed to load fixtures, %s", err)
 	}
-
-	router := NewHandler(serviceMap).InitRoutes(routesMode)
 
 	loginFailedTestCases := []loginTestCase{
 		{
@@ -237,11 +205,13 @@ func TestAuthLogin(t *testing.T) {
 
 	for _, tCase := range loginFailedTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			resBody, resCode := sendRequestAndGetResponse(
-				router,
-				tCase.requestBody,
-				loginUrl,
-			)
+			body, _ := json.Marshal(tCase.requestBody)
+			resBody, resCode := sendRequestAndGetResponse(requestData{
+				router:      layers.router,
+				requestBody: body,
+				method:      http.MethodPost,
+				url:         authLoginUrl,
+			})
 
 			if tCase.expectedError != nil {
 				if isNotError := assert.NotNil(tt, resBody); !isNotError {
@@ -273,11 +243,13 @@ func TestAuthLogin(t *testing.T) {
 
 	for _, tCase := range loginSuccessTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			resBody, resCode := sendRequestAndGetResponse(
-				router,
-				tCase.requestBody,
-				loginUrl,
-			)
+			body, _ := json.Marshal(tCase.requestBody)
+			resBody, resCode := sendRequestAndGetResponse(requestData{
+				router:      layers.router,
+				requestBody: body,
+				method:      http.MethodPost,
+				url:         authLoginUrl,
+			})
 
 			var response responses.AuthLoginResponse
 			err := json.Unmarshal(resBody, &response)
@@ -286,7 +258,7 @@ func TestAuthLogin(t *testing.T) {
 			}
 			assert.Equal(tt, http.StatusOK, resCode)
 
-			playerId, err := serviceMap.Security.ParseAuthToken(response.Token)
+			playerId, err := layers.service.Security.ParseAuthToken(response.Token)
 			if err != nil {
 				t.Errorf("Failed to get created player, %s", err)
 			}
@@ -294,35 +266,7 @@ func TestAuthLogin(t *testing.T) {
 		})
 	}
 
-	if err := bootstrapTest.TeardownTestDB(); err != nil {
+	if err := layers.bootstrap.TeardownTestDB(); err != nil {
 		t.Errorf("Failed to teardown test DB, %s", err)
-	}
-}
-
-type authRequest interface {
-	*requests.AuthRegistrationRequest |
-		*requests.AuthLoginRequest
-}
-
-func sendRequestAndGetResponse[R authRequest](
-	router *gin.Engine,
-	requestBody R,
-	url string,
-) ([]byte, int) {
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, url, getRequestBody(requestBody))
-	router.ServeHTTP(w, req)
-
-	return w.Body.Bytes(), w.Code
-}
-
-func getRequestBody[R authRequest](requestBody R) *bytes.Buffer {
-	body, _ := json.Marshal(requestBody)
-
-	switch requestBody {
-	case nil:
-		return bytes.NewBuffer(nil)
-	default:
-		return bytes.NewBuffer(body)
 	}
 }
