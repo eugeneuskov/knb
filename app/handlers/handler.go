@@ -33,5 +33,12 @@ func (h *Handler) InitRoutes(mode string) *gin.Engine {
 		auth.POST("/login", h.authLogin)
 	}
 
+	game := router.Group("/game", h.userAccessIdentity)
+	{
+		game.POST("/new", h.gameNewGame)
+		game.POST("/join/:id", h.gameJoinGame)
+		game.POST("/start/:id", h.gameStart)
+	}
+
 	return router
 }
