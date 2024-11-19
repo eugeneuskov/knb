@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"knb/app/handlers/responses"
 	"knb/app/services"
@@ -41,4 +42,13 @@ func (h *Handler) InitRoutes(mode string) *gin.Engine {
 	}
 
 	return router
+}
+
+func (h *Handler) checkGetParam(c *gin.Context, paramName string) (string, error) {
+	paramValue := c.Param(paramName)
+	if paramValue == "" {
+		return "", fmt.Errorf("param %s is required", paramName)
+	}
+
+	return paramValue, nil
 }

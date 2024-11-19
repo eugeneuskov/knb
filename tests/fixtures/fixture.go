@@ -24,3 +24,13 @@ func (f *Fixture) LoadPlayersFixture() error {
 
 	return nil
 }
+
+func (f *Fixture) LoadGamesFixture() error {
+	for _, game := range createGamesTestFixtures() {
+		if err := f.db.Create(&game).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

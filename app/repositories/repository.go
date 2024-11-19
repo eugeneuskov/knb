@@ -11,6 +11,8 @@ const (
 	notNullViolation    = "23502" // Код ошибки для NOT NULL ограничения
 	checkViolation      = "23514" // Код ошибки для CHECK ограничения
 	exclusionViolation  = "23504" // Код ошибки для EXCLUSION ограничения
+
+	RecordNotFoundError = "record not found"
 )
 
 type Repository struct {

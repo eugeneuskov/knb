@@ -23,10 +23,7 @@ func (g *gameRepository) CreateGame(players ...uuid.UUID) (*entities.Game, error
 			gamePlayers = append(gamePlayers, entities.Player{ID: playerId})
 		}
 
-		game = &entities.Game{
-			ID:      uuid.New(),
-			Players: gamePlayers,
-		}
+		game = entities.NewGame(gamePlayers)
 
 		return tx.Create(&game).Error
 	}); err != nil {
@@ -47,9 +44,13 @@ func (g *gameRepository) FindById(gameId uuid.UUID) (*entities.Game, error) {
 	return game, err
 }
 
-func (g *gameRepository) AddPlayers(game *entities.Game, players []uuid.UUID) error {
-	//TODO implement me
-	panic("implement me")
+func (g *gameRepository) AddPlayers(game *entities.Game, playerIds []uuid.UUID) error {
+	players := make([]entities.Player, 0, len(playerIds))
+	for _, playerId := range playerIds {
+		players = append(players, entities.Player{ID: playerId})
+	}
+
+	return g.db.Model(&game).Association("Players").Append(&players)
 }
 
 func (g *gameRepository) StartGame(game *entities.Game) error {

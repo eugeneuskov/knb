@@ -14,6 +14,13 @@ type Game struct {
 	Result     []GameResult `gorm:"foreignKey:GameID"`
 }
 
+func NewGame(players []Player) *Game {
+	return &Game{
+		ID:      uuid.New(),
+		Players: players,
+	}
+}
+
 type GamePlayer struct {
 	PlayerID uuid.UUID `gorm:"type:uuid;uniqueIndex:idx_game_player"`
 	GameID   uuid.UUID `gorm:"type:uuid;uniqueIndex:idx_game_player"`
