@@ -65,7 +65,7 @@ func TestAuthRegistration(t *testing.T) {
 		},
 		{
 			requestBody: &requests.AuthRegistrationRequest{
-				Login:    fixtures.AlreadyExistEmail,
+				Login:    fixtures.AlreadyExistPlayer1Email,
 				Password: "strong-pass",
 			},
 			expectedError: &expectedError{
@@ -78,7 +78,11 @@ func TestAuthRegistration(t *testing.T) {
 
 	for _, tCase := range registrationFailedTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			body, _ := json.Marshal(tCase.requestBody)
+			var body []byte
+			if tCase.requestBody != nil {
+				body, _ = json.Marshal(tCase.requestBody)
+			}
+
 			resBody, resCode := sendRequestAndGetResponse(requestData{
 				router:      layers.router,
 				requestBody: body,
@@ -108,7 +112,7 @@ func TestAuthRegistration(t *testing.T) {
 		{
 			requestBody: &requests.AuthRegistrationRequest{
 				Login:    "new-user@test.com",
-				Password: fixtures.AlreadyExistPassword,
+				Password: fixtures.AlreadyExistPlayer1Password,
 			},
 			name: "user created",
 		},
@@ -192,7 +196,7 @@ func TestAuthLogin(t *testing.T) {
 		},
 		{
 			requestBody: &requests.AuthLoginRequest{
-				Login:    fixtures.AlreadyExistEmail,
+				Login:    fixtures.AlreadyExistPlayer1Email,
 				Password: "wrong-pass",
 			},
 			expectedError: &expectedError{
@@ -205,7 +209,11 @@ func TestAuthLogin(t *testing.T) {
 
 	for _, tCase := range loginFailedTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			body, _ := json.Marshal(tCase.requestBody)
+			var body []byte
+			if tCase.requestBody != nil {
+				body, _ = json.Marshal(tCase.requestBody)
+			}
+
 			resBody, resCode := sendRequestAndGetResponse(requestData{
 				router:      layers.router,
 				requestBody: body,
@@ -234,8 +242,8 @@ func TestAuthLogin(t *testing.T) {
 	loginSuccessTestCases := []loginTestCase{
 		{
 			requestBody: &requests.AuthLoginRequest{
-				Login:    fixtures.AlreadyExistEmail,
-				Password: fixtures.AlreadyExistPassword,
+				Login:    fixtures.AlreadyExistPlayer1Email,
+				Password: fixtures.AlreadyExistPlayer1Password,
 			},
 			name: "login success",
 		},
@@ -262,7 +270,7 @@ func TestAuthLogin(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to get created player, %s", err)
 			}
-			assert.Equal(tt, playerId, fixtures.AlreadyExistUuid)
+			assert.Equal(tt, playerId, fixtures.AlreadyExistPlayer1Uuid)
 		})
 	}
 

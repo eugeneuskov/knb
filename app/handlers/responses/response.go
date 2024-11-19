@@ -31,6 +31,8 @@ func (r *Response) ParseError(c *gin.Context, err error) {
 
 	var repositoryUniqueViolationError *customErrors.UniqueViolationError
 	var wrongLoginError *customErrors.WrongLoginError
+	var notFoundError *customErrors.NotFoundError
+	var badRequestError *customErrors.BadRequestError
 
 	if errors.As(err, &repositoryUniqueViolationError) {
 		statusCode = http.StatusConflict
@@ -38,6 +40,12 @@ func (r *Response) ParseError(c *gin.Context, err error) {
 	} else if errors.As(err, &wrongLoginError) {
 		statusCode = http.StatusUnauthorized
 		message = wrongLoginError.Error()
+	} else if errors.As(err, &notFoundError) {
+		statusCode = http.StatusNotFound
+		message = err.Error()
+	} else if errors.As(err, &badRequestError) {
+		statusCode = http.StatusBadRequest
+		message = err.Error()
 	} else {
 		statusCode = http.StatusInternalServerError
 		message = err.Error()

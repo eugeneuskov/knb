@@ -35,3 +35,15 @@ func NewWrongLoginError(message string) *WrongLoginError {
 func (e *WrongLoginError) Error() string {
 	return e.message
 }
+
+type BadRequestError struct {
+	message string
+}
+
+func NewBadRequestError(message string) *BadRequestError {
+	return &BadRequestError{message}
+}
+
+func (e *BadRequestError) Error() string {
+	return e.message
+}

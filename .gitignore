@@ -6,3 +6,6 @@ hooks/*
 /.env
 /.env.test
 /docker-compose.yml
+
+/coverage.out
+/coverage.html
