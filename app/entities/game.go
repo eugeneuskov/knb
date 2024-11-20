@@ -10,7 +10,7 @@ type Game struct {
 	ID         uuid.UUID             `gorm:"type:uuid;primaryKey"`
 	StartedAt  time.Time             `gorm:"type:timestamp"`
 	FinishedAt time.Time             `gorm:"type:timestamp"`
-	Status     dictionary.GameStatus `gorm:"type:VARCHAR(20);check:status IN ('planned', waiting', 'started', 'finished')"`
+	Status     dictionary.GameStatus `gorm:"type:VARCHAR(20);check:status IN ('planned', 'waiting', 'started', 'finished')"`
 	Players    []Player              `gorm:"many2many:game_players"`
 	Prizes     []GamePrize           `gorm:"foreignKey:GameID"`
 	Result     []GameResult          `gorm:"foreignKey:GameID"`
