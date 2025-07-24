@@ -65,7 +65,7 @@ func TestAuthRegistration(t *testing.T) {
 		},
 		{
 			requestBody: &requests.AuthRegistrationRequest{
-				Login:    fixtures.AlreadyExistPlayer1Email,
+				Login:    fixtures.Player1Email,
 				Password: "strong-pass",
 			},
 			expectedError: &expectedError{
@@ -112,7 +112,7 @@ func TestAuthRegistration(t *testing.T) {
 		{
 			requestBody: &requests.AuthRegistrationRequest{
 				Login:    "new-user@test.com",
-				Password: fixtures.AlreadyExistPlayer1Password,
+				Password: fixtures.Player1Password,
 			},
 			name: "user created",
 		},
@@ -196,7 +196,7 @@ func TestAuthLogin(t *testing.T) {
 		},
 		{
 			requestBody: &requests.AuthLoginRequest{
-				Login:    fixtures.AlreadyExistPlayer1Email,
+				Login:    fixtures.Player1Email,
 				Password: "wrong-pass",
 			},
 			expectedError: &expectedError{
@@ -242,8 +242,8 @@ func TestAuthLogin(t *testing.T) {
 	loginSuccessTestCases := []loginTestCase{
 		{
 			requestBody: &requests.AuthLoginRequest{
-				Login:    fixtures.AlreadyExistPlayer1Email,
-				Password: fixtures.AlreadyExistPlayer1Password,
+				Login:    fixtures.Player1Email,
+				Password: fixtures.Player1Password,
 			},
 			name: "login success",
 		},
@@ -270,7 +270,7 @@ func TestAuthLogin(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to get created player, %s", err)
 			}
-			assert.Equal(tt, playerId, fixtures.AlreadyExistPlayer1Uuid)
+			assert.Equal(tt, playerId, fixtures.Player1Uuid)
 		})
 	}
 
