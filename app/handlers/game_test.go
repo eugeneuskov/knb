@@ -306,11 +306,18 @@ func TestGameJoinGame(t *testing.T) {
 	}
 }
 
-type gameStartGameTestCase struct {
+type gameStartGameTestCaseFailed struct {
 	*expectedError
 	headers []*testRequestHeader
 	gameId  string
 	name    string
+}
+
+type gameStartGameTestCaseSuccess struct {
+	checkGameStatus bool
+	headers         []*testRequestHeader
+	gameId          string
+	name            string
 }
 
 func TestGameStartGame(t *testing.T) {
@@ -345,7 +352,7 @@ func TestGameStartGame(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	startGameFiledTestCases := []gameStartGameTestCase{
+	startGameFiledTestCases := []gameStartGameTestCaseFailed{
 		{
 			expectedError: &expectedError{
 				code:    http.StatusBadRequest,
@@ -458,6 +465,7 @@ func TestGameStartGame(t *testing.T) {
 			gameId: fixtures.GameWaitingUuid,
 			name:   "start play by non-participant",
 		},
+		// дальнейшие тест-кейсы необходимо прописать при добавлении условий игры (а именно на max/min игроков)
 	}
 
 	for _, tCase := range startGameFiledTestCases {
@@ -487,29 +495,45 @@ func TestGameStartGame(t *testing.T) {
 		})
 	}
 
-	startGameSuccessTestCases := []gameStartGameTestCase{
+	startGameSuccessTestCases := []gameStartGameTestCaseSuccess{
 		{
-			expectedError: nil,
-			headers:       nil,
-			gameId:        "",
-			name:          "successfully start the game",
+			headers: []*testRequestHeader{
+				{
+					key:   authorizationToken,
+					value: playerOneAuthToken,
+				},
+			},
+			gameId: fixtures.GameWaitingUuid,
+			name:   "successfully start the game",
+		},
+		{
+			checkGameStatus: true,
+			headers: []*testRequestHeader{
+				{
+					key:   authorizationToken,
+					value: playerTwoAuthToken,
+				},
+			},
+			gameId: fixtures.GameWaitingUuid,
+			name:   "successfully start the game",
 		},
 	}
 
 	for _, tCase := range startGameSuccessTestCases {
 		t.Run(tCase.name, func(tt *testing.T) {
-			//resBody, resCode := sendRequestAndGetResponse(requestData{
-			_, _ = sendRequestAndGetResponse(requestData{
+			_, resCode := sendRequestAndGetResponse(requestData{
 				router:  layers.router,
 				headers: tCase.headers,
 				method:  http.MethodPost,
 				url:     fmt.Sprintf("%s%s", gameStartGameUrl, tCase.gameId),
 			})
 
+			assert.Equal(tt, http.StatusNoContent, resCode)
+
 			/*
-				1. проверить на statusOk
-				2. проверить смену статуса у игры
-				3. проверить наличие установленных ws-соединений
+				+ 1. проверить на statusOk
+				- 2. проверить статус готовности в game_players
+				- 3. при наличии достаточного количества игроков (checkGameStatus=true) проверить смену статуса у самой игры
 			*/
 		})
 	}
